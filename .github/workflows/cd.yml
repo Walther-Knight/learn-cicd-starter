@@ -5,21 +5,40 @@ on:
         branches: [main]
 
 jobs:
-    Deploy:
-        runs-on: ubuntu-latest
+  Deploy:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Check out code
+          uses: actions/checkout@v4
 
-        steps:
-            - name: Check out code
-              uses: actions/checkout@v4
+        - name: Set up Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: "1.23.0"
 
-            - name: Set up Go
-              uses: actions/setup-go@v5
-              with:
-                go-version: "1.23.0"
+        - name: Add go bin to PATH
+          run: echo "$HOME/go/bin" >> $GITHUB_PATH
 
-            - name: Add go bin to PATH
-              run: echo "$HOME/go/bin" >> $GITHUB_PATH
+        - name: Build App
+          run: ./scripts/buildprod.sh
+  GCPSetup:
+    runs-on: ubuntu-latest
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
 
-            - name: Build App
-              run: ./scripts/buildprod.sh
+    steps:
+    - id: auth
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v2'
+
+    - name: Use gcloud CLI
+      run: 'gcloud info'
+
+    - name: Build Application
+      run: gcloud builds submit --tag us-central1-docker.pkg.dev/notely-461419/notely-ar-repo/notely:latest .
