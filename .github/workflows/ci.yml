@@ -17,6 +17,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.23.0"
+      - name: Add go bin to PATH
+        run: echo "$HOME/go/bin" >> $GITHUB_PATH
 
       - name: Run Test Packages
         run: go test ./... -cover
@@ -33,5 +35,13 @@ jobs:
         with:
           go-version: "1.23.0"
 
-      - name: Style
+      - name: Add go bin to PATH
+        run: echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Run staticcheck action
+        uses: dominikh/staticcheck-action@v1
+        with:
+          version: "latest"
+
+      - name: Check Go Format
         run: test -z $(go fmt ./...)
