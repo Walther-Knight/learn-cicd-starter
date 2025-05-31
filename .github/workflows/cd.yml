@@ -26,6 +26,9 @@ jobs:
         - name: Add go bin to PATH
           run: echo "$HOME/go/bin" >> $GITHUB_PATH
 
+        - name: Install goose
+          run: go install github.com/pressly/goose/v3/cmd/goose@latest
+
         - name: Build App
           run: ./scripts/buildprod.sh
 
@@ -33,6 +36,9 @@ jobs:
           uses: 'google-github-actions/auth@v2'
           with:
             credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+          
+        - name: Run database migrations
+          run: ./scripts/migrateup.sh
 
         - name: 'Set up Cloud SDK'
           uses: 'google-github-actions/setup-gcloud@v2'
